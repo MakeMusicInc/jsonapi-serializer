@@ -1308,6 +1308,38 @@ describe('JSON API Deserializer', function () {
         done(null, json);
       });
     });
+    it(`links' attributes should be inflected`, function (done) {
+      var dataSet = {
+        data: {
+          type: 'users',
+          attributes: { 'first-name': 'Sandro', 'last-name': 'Munda' },
+          links: {
+              self: '/user/1',
+              'key-to-inflect': '/key/1'
+          }
+        },
+        links: {
+          self: '/articles/1/relationships/tags',
+          'key-to-inflect': '/articles/1/tags'
+        }
+      };
+
+      new JSONAPIDeserializer({
+          keyForAttribute: 'camelCase'
+      }).deserialize(dataSet, function (err, json) {
+        expect(json).to.have.key('firstName', 'lastName', 'links', 'meta');
+        expect(json.meta).to.have.key('links');
+        expect(json.links).to.be.eql({
+            self: '/user/1',
+            keyToInflect: '/key/1',
+        });
+        expect(json.meta.links).to.be.eql({
+          self: '/articles/1/relationships/tags',
+          keyToInflect: '/articles/1/tags'
+        });
+        done(null, json);
+      });
+    });
   });
 
   describe('id', function () {
